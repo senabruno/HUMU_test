@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Product Dashboard</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .product-card { border: 1px solid #ddd; padding: 10px; margin: 5px; display: inline-block; width: 200px; }
+    .pagination button { margin: 5px; padding: 8px 12px; cursor: pointer; }
+    .filters select { margin: 10px 0; padding: 8px; }
+    #loading { display: none; color: blue; }
+  </style>
+</head>
+<body>
+  <h1>Product Dashboard</h1>
+  
+  <div class="filters">
+    <label>Category:</label>
+    <select id="categoryFilter">
+      <option value="">All</option>
+      <option value="beauty">Beauty</option>
+      <option value="furniture">Furniture</option>
+      <option value="groceries">Groceries</option>
+      <option value="fragrances">Fragrances</option>
+      <option value="electronics">Electronics</option>
+    </select>
+  </div>
+
+  <div id="loading">Loading...</div>
+  <div id="products"></div>
+  
+  <div class="pagination" id="pagination"></div>
+
+  <script>
+    let currentPage = 1;
+    const limit = 5;
+    let currentCategory = '';
+    let totalProducts = 0;
+
+    async function fetchProducts() {
+      document.getElementById('loading').style.display = 'block';
+      
+      let url = `https://dummyjson.com/products?limit=${limit}&skip=${(currentPage-1)*limit}`;
+      if (currentCategory) {
+        url = `https://dummyjson.com/products/category/${currentCategory}?limit=${limit}&skip=${(currentPage-1)*limit}`;
+      }
+      
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        totalProducts = data.total || data.products.length;
+        renderProducts(data.products);
+        renderPagination(totalProducts);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        document.getElementById('products').innerHTML = '<p>Error loading products</p>';
+      }
+      document.getElementById('loading').style.display = 'none';
+    }
+
+    function renderProducts(products) {
+      const container = document.getElementById('products');
+      if (!products || products.length === 0) {
+        container.innerHTML = '<p>No products found</p>';
+        return;
+      }
+      container.innerHTML = products.map(p => 
+        `<div class="product-card" data-testid="product">
+          <h3>${p.title}</h3>
+          <p>Category: ${p.category}</p>
+          <p>Price: $${p.price}</p>
+        </div>`
+      ).join('');
+    }
+
+    function renderPagination(total) {
+      const totalPages = Math.ceil(total / limit);
+      const container = document.getElementById('pagination');
+      let html = '';
+      for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+        html += `<button ${i === currentPage ? 'disabled' : ''} onclick="goToPage(${i})">${i}</button>`;
+      }
+      container.innerHTML = html;
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      fetchProducts();
+    }
+
+    document.getElementById('categoryFilter').addEventListener('change', function() {
+      currentCategory = this.value;
+      currentPage = 1;
+      fetchProducts();
+    });
+
+    fetchProducts();
+  </script>
+</body>
+</html>

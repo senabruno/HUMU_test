@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Search Products</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .search-box { margin: 20px 0; }
+    .search-box input { padding: 10px; width: 300px; }
+    .search-box button { padding: 10px 20px; cursor: pointer; }
+    .product-card { border: 1px solid #ddd; padding: 10px; margin: 5px; display: inline-block; width: 200px; }
+    #loading { display: none; color: blue; }
+    #error { display: none; color: red; }
+    #empty { display: none; color: orange; }
+  </style>
+</head>
+<body>
+  <h1>Search Products</h1>
+  
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search for products...">
+    <button id="searchButton">Search</button>
+  </div>
+
+  <div id="loading">Loading...</div>
+  <div id="error">Error loading products</div>
+  <div id="empty">No products found</div>
+  <div id="products"></div>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
+    const productsDiv = document.getElementById('products');
+    const loadingDiv = document.getElementById('loading');
+    const errorDiv = document.getElementById('error');
+    const emptyDiv = document.getElementById('empty');
+
+    function showLoading(show) {
+      loadingDiv.style.display = show ? 'block' : 'none';
+    }
+
+    function showError(show) {
+      errorDiv.style.display = show ? 'block' : 'none';
+    }
+
+    function showEmpty(show) {
+      emptyDiv.style.display = show ? 'block' : 'none';
+    }
+
+    function renderProducts(products) {
+      productsDiv.innerHTML = '';
+      if (!products || products.length === 0) {
+        showEmpty(true);
+        return;
+      }
+      showEmpty(false);
+      productsDiv.innerHTML = products.map(p => 
+        `<div class="product-card" data-testid="product">
+          <h3>${p.title}</h3>
+          <p>Category: ${p.category}</p>
+          <p>Price: $${p.price}</p>
+        </div>`
+      ).join('');
+    }
+
+    async function performSearch() {
+      const query = searchInput.value.trim();
+      if (!query) return;
+
+      showLoading(true);
+      showError(false);
+      showEmpty(false);
+
+      try {
+        const res = await fetch(`https://dummyjson.com/products/search?q=${query}`);
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
+        renderProducts(data.products);
+      } catch (error) {
+        showError(true);
+        productsDiv.innerHTML = '';
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    searchButton.addEventListener('click', performSearch);
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') performSearch();
+    });
+  </script>
+</body>
+</html>

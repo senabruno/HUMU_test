@@ -1,0 +1,7 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["cypress", "node", "@badeball/cypress-cucumber-preprocessor"]
+  },
+  "include": ["**/*.ts", "../cypress.config.ts"]
+}

@@ -1,0 +1,15 @@
+{
+  "validUsers": [
+    {
+      "username": "michaelw",
+      "password": "michaelwpass",
+      "fullName": "Michael Williams"
+    }
+  ],
+  "invalidUsers": [
+    {
+      "username": "invaliduser",
+      "password": "wrongpassword"
+    }
+  ]
+}
